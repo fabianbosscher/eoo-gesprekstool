@@ -1,6 +1,10 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) throw new Error('RESEND_API_KEY is not set')
+  return new Resend(apiKey)
+}
 
 interface SendReportEmailParams {
   to: string
@@ -99,7 +103,7 @@ export async function sendReportEmail({
 </html>
 `
 
-  const result = await resend.emails.send({
+  const result = await getResend().emails.send({
     from: process.env.RESEND_FROM_EMAIL ?? 'noreply@easyofficeonline.nl',
     to,
     subject: `Gespreksverslag: ${reportTitle}`,
