@@ -19,11 +19,45 @@ Richtlijnen:
 
 Geef ALLEEN de JSON terug, zonder markdown code blocks, geen uitleg, geen json prefix.`
 
+export type OfferMode = 'auto' | 'yes' | 'no'
+
+export interface ProcessOptions {
+  offerMode?: OfferMode
+  extraInstructions?: string
+}
+
+function buildOptionsBlock(options: ProcessOptions): string {
+  const lines: string[] = []
+
+  if (options.offerMode === 'yes') {
+    lines.push(
+      '- Offerte: BRENG ALTIJD een offerte uit. Vul het "offer" object volledig in met concrete items en bedragen. Als de transcriptie geen prijzen noemt, maak dan een redelijke schatting op basis van het besproken werk en geef dat aan in "intro".'
+    )
+  } else if (options.offerMode === 'no') {
+    lines.push(
+      '- Offerte: BRENG GEEN offerte uit. Vul het "offer" object met lege waarden: intro = "", items = [], total = "", validity = "". Zet ook dealValue op "€0".'
+    )
+  } else {
+    lines.push(
+      '- Offerte: alleen invullen als er in de transcriptie daadwerkelijk een offerte of bedragen zijn besproken. Anders alle offer-velden leeg laten.'
+    )
+  }
+
+  if (options.extraInstructions?.trim()) {
+    lines.push(`- Extra instructies van de agent: ${options.extraInstructions.trim()}`)
+  }
+
+  return lines.length ? `\n\nAanvullende instructies voor dit rapport:\n${lines.join('\n')}` : ''
+}
+
 export async function processTranscription(
   transcription: string,
   contactName: string,
-  contactEmail: string
+  contactEmail: string,
+  options: ProcessOptions = {}
 ): Promise<ReportContent> {
+  const optionsBlock = buildOptionsBlock(options)
+
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 4096,
@@ -38,7 +72,7 @@ E-mail klant: ${contactEmail}
 Transcriptie:
 ---
 ${transcription}
----
+---${optionsBlock}
 
 Genereer een JSON object met deze exacte structuur:
 {

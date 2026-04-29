@@ -25,6 +25,10 @@ export default function NewReportPage() {
   const [reportPassword, setReportPassword] = useState('EOO')
   const [sendEmail, setSendEmail] = useState(true)
 
+  // Prompt options
+  const [offerMode, setOfferMode] = useState<'auto' | 'yes' | 'no'>('auto')
+  const [extraInstructions, setExtraInstructions] = useState('')
+
   // Generated content
   const [content, setContent] = useState<ReportContent | null>(null)
   const [reportTitle, setReportTitle] = useState('')
@@ -46,7 +50,13 @@ export default function NewReportPage() {
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcription, clientName, clientEmail }),
+        body: JSON.stringify({
+          transcription,
+          clientName,
+          clientEmail,
+          offerMode,
+          extraInstructions,
+        }),
       })
 
       if (!res.ok) throw new Error('Verwerking mislukt')
@@ -212,6 +222,62 @@ export default function NewReportPage() {
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm resize-none font-mono"
                 placeholder="Plak hier de transcriptie of aantekeningen van het gesprek..."
               />
+            </div>
+
+            {/* Prompt options */}
+            <div className="border border-gray-100 rounded-xl p-4 bg-gray-50/50 space-y-4">
+              <div>
+                <h3 className="font-montserrat font-bold text-sm text-eoo-marine">
+                  Aanvullende details voor AI
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Stuur Claude bij hoe het rapport opgesteld moet worden.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Offerte uitbrengen?
+                </label>
+                <div className="flex gap-2">
+                  {[
+                    { value: 'auto', label: 'Automatisch' },
+                    { value: 'yes', label: 'Ja' },
+                    { value: 'no', label: 'Nee' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setOfferMode(opt.value as 'auto' | 'yes' | 'no')}
+                      className={`flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition-colors border
+                        ${offerMode === opt.value
+                          ? 'bg-eoo-blue text-white border-eoo-blue'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-eoo-blue/40'
+                        }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-1.5">
+                  {offerMode === 'auto' && 'Claude bepaalt zelf of er een offerte in het rapport komt.'}
+                  {offerMode === 'yes' && 'Er wordt altijd een offerte opgenomen in het rapport.'}
+                  {offerMode === 'no' && 'Het rapport bevat geen offerte.'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Extra instructies <span className="text-gray-400 font-normal">(optioneel)</span>
+                </label>
+                <textarea
+                  value={extraInstructions}
+                  onChange={(e) => setExtraInstructions(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm resize-none"
+                  placeholder="Bijv. 'klant is prijsgevoelig', 'focus op urenadministratie', 'noem geen bedragen lager dan €1.000'..."
+                />
+              </div>
             </div>
 
             <div className="flex items-center gap-3 pt-2">
