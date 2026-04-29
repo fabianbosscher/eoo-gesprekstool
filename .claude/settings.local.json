@@ -3,7 +3,10 @@
     "allow": [
       "Bash(gh auth *)",
       "mcp__Claude_in_Chrome__tabs_context_mcp",
-      "Bash(openssl rand *)"
+      "Bash(openssl rand *)",
+      "Bash(python3 -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'admin123', bcrypt.gensalt\\(10\\)\\).decode\\(\\)\\)\")",
+      "Bash(pip3 install *)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

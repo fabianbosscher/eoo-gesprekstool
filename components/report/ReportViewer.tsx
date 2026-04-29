@@ -18,6 +18,7 @@ interface ReportData {
   clientName: string
   meetingDate: string
   content: ReportContent
+  creatorName: string | null
 }
 
 interface NavItem {
@@ -103,6 +104,11 @@ export function ReportViewer({ report }: { report: ReportData }) {
           <p className="text-eoo-blue font-montserrat font-semibold text-lg mt-1">
             Gespreksverslag & Voorstel — {meetingDateFormatted}
           </p>
+          {report.creatorName && (
+            <p className="text-gray-500 text-sm mt-2">
+              Opgesteld door {report.creatorName}
+            </p>
+          )}
         </div>
 
         {/* Sections */}

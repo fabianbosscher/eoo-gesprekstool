@@ -10,7 +10,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ontbrekende gegevens' }, { status: 400 })
   }
 
-  const report = await prisma.report.findUnique({ where: { slug } })
+  const report = await prisma.report.findUnique({
+    where: { slug },
+    include: { user: { select: { name: true } } },
+  })
 
   if (!report) {
     return NextResponse.json({ error: 'Rapport niet gevonden' }, { status: 404 })
@@ -30,5 +33,6 @@ export async function POST(req: NextRequest) {
     clientName: report.clientName,
     meetingDate: report.meetingDate,
     content: JSON.parse(report.content),
+    creatorName: report.user?.name ?? null,
   })
 }

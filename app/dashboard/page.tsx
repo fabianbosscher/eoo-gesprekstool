@@ -17,6 +17,8 @@ interface Report {
   createdAt: string
   expiresAt: string
   sentAt: string | null
+  userId: string
+  user: { name: string; email: string }
 }
 
 export default function DashboardPage() {
@@ -119,6 +121,7 @@ export default function DashboardPage() {
           <div className="space-y-3">
             {reports.map((report) => {
               const expired = new Date() > new Date(report.expiresAt)
+              const isOwner = (session?.user as { id?: string })?.id === report.userId
               return (
                 <div
                   key={report.id}
@@ -150,7 +153,8 @@ export default function DashboardPage() {
                       Gesprek:{' '}
                       {format(new Date(report.meetingDate), 'd MMMM yyyy', { locale: nl })} ·
                       Verloopt:{' '}
-                      {format(new Date(report.expiresAt), 'd MMMM yyyy', { locale: nl })}
+                      {format(new Date(report.expiresAt), 'd MMMM yyyy', { locale: nl })} ·
+                      Aangemaakt door: {report.user?.name ?? 'Onbekend'}
                     </p>
                   </div>
 
@@ -172,12 +176,14 @@ export default function DashboardPage() {
                     >
                       Link kopiëren
                     </button>
-                    <button
-                      onClick={() => handleDelete(report.id)}
-                      className="text-sm text-red-400 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                    >
-                      Verwijderen
-                    </button>
+                    {isOwner && (
+                      <button
+                        onClick={() => handleDelete(report.id)}
+                        className="text-sm text-red-400 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        Verwijderen
+                      </button>
+                    )}
                   </div>
                 </div>
               )

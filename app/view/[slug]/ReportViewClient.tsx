@@ -11,6 +11,7 @@ interface ReportData {
   clientName: string
   meetingDate: string
   content: ReportContent
+  creatorName: string | null
 }
 
 export function ReportViewClient({ slug }: { slug: string }) {

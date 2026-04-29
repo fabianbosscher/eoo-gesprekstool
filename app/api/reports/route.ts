@@ -7,15 +7,12 @@ import bcrypt from 'bcryptjs'
 import { nanoid } from 'nanoid'
 import { addDays } from 'date-fns'
 
-// GET: alle rapporten van ingelogde gebruiker
+// GET: alle rapporten (gedeeld over agents)
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 
-  const userId = (session.user as { id?: string }).id!
-
   const reports = await prisma.report.findMany({
-    where: { userId },
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -27,6 +24,8 @@ export async function GET() {
       createdAt: true,
       expiresAt: true,
       sentAt: true,
+      userId: true,
+      user: { select: { name: true, email: true } },
     },
   })
 
