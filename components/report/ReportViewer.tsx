@@ -12,6 +12,7 @@ import { SectionCollaboration } from './sections/SectionCollaboration'
 import { SectionOffer } from './sections/SectionOffer'
 import { SectionNextSteps } from './sections/SectionNextSteps'
 import { SectionContact } from './sections/SectionContact'
+import { Logo } from '@/components/Logo'
 
 interface ReportData {
   title: string
@@ -19,6 +20,7 @@ interface ReportData {
   meetingDate: string
   content: ReportContent
   creatorName: string | null
+  bookingUrl: string | null
 }
 
 interface NavItem {
@@ -55,10 +57,8 @@ export function ReportViewer({ report }: { report: ReportData }) {
       <aside className="w-56 bg-eoo-marine text-white flex-shrink-0 flex flex-col fixed top-0 left-0 bottom-0 z-20 no-print">
         {/* Logo */}
         <div className="px-5 py-6 border-b border-white/10">
-          <h1 className="font-montserrat font-bold text-base leading-tight">
-            Easy <span className="text-eoo-blue">Office</span> Online
-          </h1>
-          <p className="text-eoo-green text-[10px] mt-0.5 font-semibold uppercase tracking-wide">
+          <Logo variant="light" height={28} className="text-base leading-tight" />
+          <p className="text-eoo-green text-[10px] mt-2 font-semibold uppercase tracking-wide">
             Gespreksverslag & Voorstel
           </p>
           <p className="text-gray-400 text-[11px] mt-2">{meetingDateFormatted}</p>
@@ -123,6 +123,7 @@ export function ReportViewer({ report }: { report: ReportData }) {
             id="stappen"
             nextSteps={report.content.nextSteps}
             actionItems={report.content.actionItems}
+            bookingUrl={report.bookingUrl}
           />
           <SectionContact id="contact" contact={report.content.contact} />
         </div>

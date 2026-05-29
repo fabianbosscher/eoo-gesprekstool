@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   const report = await prisma.report.findUnique({
     where: { slug },
-    include: { user: { select: { name: true } } },
+    include: { user: { select: { name: true, bookingUrl: true } } },
   })
 
   if (!report) {
@@ -34,5 +34,6 @@ export async function POST(req: NextRequest) {
     meetingDate: report.meetingDate,
     content: JSON.parse(report.content),
     creatorName: report.user?.name ?? null,
+    bookingUrl: report.showBooking ? report.user?.bookingUrl ?? null : null,
   })
 }

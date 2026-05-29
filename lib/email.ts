@@ -23,6 +23,8 @@ export async function sendReportEmail({
   password,
   senderName,
 }: SendReportEmailParams) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://easyofficeonline.nl'
+  const logoUrl = `${appUrl}/logo-white.png`
   const html = `
 <!DOCTYPE html>
 <html>
@@ -38,10 +40,8 @@ export async function sendReportEmail({
           <!-- Header -->
           <tr>
             <td style="background:#03173d;padding:32px 40px;">
-              <h1 style="margin:0;color:#ffffff;font-family:Montserrat,Arial,sans-serif;font-weight:700;font-size:22px;">
-                Easy <span style="color:#208ad0;">Office</span> Online
-              </h1>
-              <p style="margin:4px 0 0;color:#53d4a7;font-size:13px;">Gespreksverslag</p>
+              <img src="${logoUrl}" alt="Easy Office Online" height="36" style="display:block;height:36px;width:auto;border:0;outline:none;" />
+              <p style="margin:8px 0 0;color:#53d4a7;font-size:13px;">Gespreksverslag</p>
             </td>
           </tr>
           <!-- Body -->

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { Logo } from '@/components/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,10 +35,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-eoo-marine flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="font-montserrat text-3xl font-bold text-white">
-            Easy <span className="text-eoo-blue">Office</span> Online
-          </h1>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Logo variant="light" height={48} className="text-white text-3xl" />
           <p className="text-eoo-green mt-2 text-sm">Gesprekstool</p>
         </div>
 

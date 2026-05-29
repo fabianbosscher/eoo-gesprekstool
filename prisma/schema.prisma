@@ -9,12 +9,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
-  reports   Report[]
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String
+  password   String
+  bookingUrl String?
+  createdAt  DateTime @default(now())
+  reports    Report[]
 }
 
 model Report {
@@ -29,6 +30,7 @@ model Report {
   createdAt    DateTime  @default(now())
   expiresAt    DateTime
   sentAt       DateTime?
+  showBooking  Boolean   @default(false)
   userId       String
   user         User      @relation(fields: [userId], references: [id])
 }

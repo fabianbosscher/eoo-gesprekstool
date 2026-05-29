@@ -16,6 +16,7 @@ Richtlijnen:
 - Als informatie ontbreekt, gebruik dan een lege string of lege array — verzin niets
 - Schat de gespreksduur in op basis van de transcriptie (bijv. "~45 min")
 - Het dealValue veld is het totale offertebedrag, of leeg als er geen offerte was
+- Cluster de gesprekshighlights per dienst-categorie. Gebruik als "title" één van deze vaste categorieën: "Algemeen", "Telefonie", "Internet", "Netwerk", "Werkplekken", "Overig". Sla categorieën zonder besproken inhoud volledig over (geen lege items). De "content" is een samenhangende beschrijving van wat er binnen die categorie besproken is.
 
 Geef ALLEEN de JSON terug, zonder markdown code blocks, geen uitleg, geen json prefix.`
 
@@ -91,8 +92,8 @@ Genereer een JSON object met deze exacte structuur:
   ],
   "proposition": "Beschrijving van wat Easy Office Online aanbiedt, relevant voor dit gesprek",
   "highlights": [
-    {"title": "Onderwerp 1", "content": "Wat is er over dit onderwerp besproken"},
-    {"title": "Onderwerp 2", "content": "..."}
+    {"title": "Algemeen", "content": "Wat er in deze categorie besproken is"},
+    {"title": "Telefonie", "content": "..."}
   ],
   "collaboration": "Beschrijving van de samenwerkingsmogelijkheden die besproken zijn",
   "offer": {

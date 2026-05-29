@@ -40,8 +40,16 @@ export async function POST(req: NextRequest) {
   const userId = (session.user as { id?: string }).id!
   const user = await prisma.user.findUnique({ where: { id: userId } })
 
-  const { title, clientName, clientEmail, meetingDate, password, content, sendEmail } =
-    await req.json()
+  const {
+    title,
+    clientName,
+    clientEmail,
+    meetingDate,
+    password,
+    content,
+    sendEmail,
+    showBooking,
+  } = await req.json()
 
   if (!title || !clientName || !clientEmail || !password || !content) {
     return NextResponse.json({ error: 'Verplichte velden ontbreken' }, { status: 400 })
@@ -61,6 +69,7 @@ export async function POST(req: NextRequest) {
       passwordHash,
       content: JSON.stringify(content),
       expiresAt,
+      showBooking: Boolean(showBooking),
       userId,
     },
   })

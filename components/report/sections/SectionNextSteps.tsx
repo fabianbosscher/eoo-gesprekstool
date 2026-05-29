@@ -4,9 +4,10 @@ interface Props {
   id: string
   nextSteps: ReportNextStep[]
   actionItems: ReportActionItem[]
+  bookingUrl?: string | null
 }
 
-export function SectionNextSteps({ id, nextSteps, actionItems }: Props) {
+export function SectionNextSteps({ id, nextSteps, actionItems, bookingUrl }: Props) {
   return (
     <section id={id} className="scroll-mt-8">
       <h3 className="font-montserrat font-bold text-xl text-eoo-marine mb-4">Volgende Stappen</h3>
@@ -40,6 +41,27 @@ export function SectionNextSteps({ id, nextSteps, actionItems }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {bookingUrl && (
+        <div className="mb-6 bg-gradient-to-r from-eoo-blue/10 to-eoo-green/10 border border-eoo-blue/20 rounded-2xl p-5 flex items-center justify-between gap-4 no-print">
+          <div>
+            <h4 className="font-montserrat font-bold text-eoo-marine">
+              Vervolgafspraak inplannen
+            </h4>
+            <p className="text-sm text-gray-600 mt-0.5">
+              Direct een tijdslot kiezen via onze online agenda.
+            </p>
+          </div>
+          <a
+            href={bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-eoo-blue text-white font-montserrat font-bold px-5 py-2.5 rounded-xl hover:bg-blue-600 transition-colors text-sm whitespace-nowrap"
+          >
+            Plan afspraak →
+          </a>
         </div>
       )}
 

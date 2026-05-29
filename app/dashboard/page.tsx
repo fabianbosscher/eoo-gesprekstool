@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { nl } from 'date-fns/locale'
+import { Logo } from '@/components/Logo'
 
 interface Report {
   id: string
@@ -64,13 +65,17 @@ export default function DashboardPage() {
       <header className="bg-eoo-marine text-white px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="font-montserrat font-bold text-xl">
-              Easy <span className="text-eoo-blue">Office</span> Online
-            </h1>
+            <Logo variant="light" height={32} className="text-white text-xl" />
             <p className="text-eoo-green text-xs mt-0.5">Gesprekstool</p>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-300">{session?.user?.name}</span>
+            <Link
+              href="/dashboard/settings"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              Instellingen
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: '/login' })}
               className="text-sm text-gray-400 hover:text-white transition-colors"
@@ -167,6 +172,14 @@ export default function DashboardPage() {
                     >
                       Bekijken
                     </a>
+                    {isOwner && (
+                      <Link
+                        href={`/dashboard/reports/${report.id}/edit`}
+                        className="text-sm text-gray-600 hover:text-eoo-marine px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        Bewerken
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(`${appUrl}/view/${report.slug}`)

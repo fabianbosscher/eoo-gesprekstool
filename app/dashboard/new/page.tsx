@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { ReportContent } from '@/lib/types'
+import { Logo } from '@/components/Logo'
 
 type Step = 'input' | 'preview' | 'done'
 
@@ -29,9 +30,22 @@ export default function NewReportPage() {
   const [offerMode, setOfferMode] = useState<'auto' | 'yes' | 'no'>('auto')
   const [extraInstructions, setExtraInstructions] = useState('')
 
+  // Booking
+  const [showBooking, setShowBooking] = useState(false)
+  const [hasBookingUrl, setHasBookingUrl] = useState<boolean | null>(null)
+
   // Generated content
   const [content, setContent] = useState<ReportContent | null>(null)
   const [reportTitle, setReportTitle] = useState('')
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetch('/api/profile')
+        .then((r) => r.json())
+        .then((d) => setHasBookingUrl(Boolean(d.user?.bookingUrl)))
+        .catch(() => setHasBookingUrl(false))
+    }
+  }, [status])
 
   if (status === 'unauthenticated') {
     router.push('/login')
@@ -89,6 +103,7 @@ export default function NewReportPage() {
           password: reportPassword,
           content,
           sendEmail,
+          showBooking,
         }),
       })
 
@@ -108,9 +123,7 @@ export default function NewReportPage() {
       <header className="bg-eoo-marine text-white px-6 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="font-montserrat font-bold text-xl">
-              Easy <span className="text-eoo-blue">Office</span> Online
-            </h1>
+            <Logo variant="light" height={32} className="text-white text-xl" />
             <p className="text-eoo-green text-xs mt-0.5">Gesprekstool</p>
           </div>
           <Link
@@ -280,16 +293,39 @@ export default function NewReportPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <input
-                type="checkbox"
-                id="sendEmail"
-                checked={sendEmail}
-                onChange={(e) => setSendEmail(e.target.checked)}
-                className="w-4 h-4 accent-eoo-blue"
-              />
-              <label htmlFor="sendEmail" className="text-sm text-gray-600">
-                Stuur direct een e-mail naar de klant met de rapportlink
+            <div className="space-y-3 pt-2">
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={sendEmail}
+                  onChange={(e) => setSendEmail(e.target.checked)}
+                  className="w-4 h-4 accent-eoo-blue"
+                />
+                <span className="text-sm text-gray-600">
+                  Stuur direct een e-mail naar de klant met de rapportlink
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={showBooking}
+                  onChange={(e) => setShowBooking(e.target.checked)}
+                  disabled={hasBookingUrl === false}
+                  className="w-4 h-4 accent-eoo-blue mt-0.5"
+                />
+                <span className="text-sm text-gray-600">
+                  Toon &quot;Vervolgafspraak inplannen&quot;-knop in het rapport
+                  {hasBookingUrl === false && (
+                    <span className="block text-xs text-red-500 mt-0.5">
+                      Stel eerst je Microsoft Bookings link in via{' '}
+                      <Link href="/dashboard/settings" className="underline">
+                        Instellingen
+                      </Link>
+                      .
+                    </span>
+                  )}
+                </span>
               </label>
             </div>
 
