@@ -49,8 +49,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
   })
 
   const filename = `EOO-gespreksverslag-${slugifyFilename(report.clientName)}.pdf`
+  const body = new Uint8Array(pdfBuffer)
 
-  return new NextResponse(pdfBuffer, {
+  return new NextResponse(body, {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',

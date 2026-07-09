@@ -39,8 +39,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   })
 
   const filename = `EOO-gespreksverslag-${slugifyFilename(report.clientName)}.pdf`
+  const body = new Uint8Array(pdfBuffer)
 
-  return new NextResponse(pdfBuffer, {
+  return new NextResponse(body, {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
