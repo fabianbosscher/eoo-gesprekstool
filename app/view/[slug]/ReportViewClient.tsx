@@ -59,7 +59,7 @@ export function ReportViewClient({ slug }: { slug: string }) {
   }
 
   if (report) {
-    return <ReportViewer report={report} />
+    return <ReportViewer report={report} slug={slug} password={password} />
   }
 
   return (

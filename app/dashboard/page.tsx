@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { nl } from 'date-fns/locale'
+import { formatDateNL } from '@/lib/dates'
 import { Logo } from '@/components/Logo'
 
 interface Report {
@@ -155,11 +154,9 @@ export default function DashboardPage() {
                       {report.clientName} · {report.clientEmail}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      Gesprek:{' '}
-                      {format(new Date(report.meetingDate), 'd MMMM yyyy', { locale: nl })} ·
-                      Verloopt:{' '}
-                      {format(new Date(report.expiresAt), 'd MMMM yyyy', { locale: nl })} ·
-                      Aangemaakt door: {report.user?.name ?? 'Onbekend'}
+                      Gesprek: {formatDateNL(report.meetingDate)} · Verloopt:{' '}
+                      {formatDateNL(report.expiresAt)} · Aangemaakt door:{' '}
+                      {report.user?.name ?? 'Onbekend'}
                     </p>
                   </div>
 
@@ -171,6 +168,12 @@ export default function DashboardPage() {
                       className="text-sm text-eoo-blue hover:underline px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       Bekijken
+                    </a>
+                    <a
+                      href={`/api/reports/${report.id}/pdf`}
+                      className="text-sm text-eoo-marine hover:text-eoo-blue px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      PDF
                     </a>
                     {isOwner && (
                       <Link

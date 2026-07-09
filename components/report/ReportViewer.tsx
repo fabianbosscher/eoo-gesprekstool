@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import type { ReportContent } from '@/lib/types'
-import { format } from 'date-fns'
-import { nl } from 'date-fns/locale'
+import { formatDateNL } from '@/lib/dates'
 import { SectionOverview } from './sections/SectionOverview'
 import { SectionParticipants } from './sections/SectionParticipants'
 import { SectionProposition } from './sections/SectionProposition'
@@ -40,10 +39,44 @@ const navItems: NavItem[] = [
   { id: 'contact', label: 'Contact', icon: '✉️' },
 ]
 
-export function ReportViewer({ report }: { report: ReportData }) {
+export function ReportViewer({
+  report,
+  slug,
+  password,
+}: {
+  report: ReportData
+  slug?: string
+  password?: string
+}) {
   const [activeSection, setActiveSection] = useState('overzicht')
+  const [downloading, setDownloading] = useState(false)
 
-  const meetingDateFormatted = format(new Date(report.meetingDate), 'd MMMM yyyy', { locale: nl })
+  const meetingDateFormatted = formatDateNL(report.meetingDate)
+
+  async function handleDownloadPDF() {
+    if (!slug || !password) return
+    setDownloading(true)
+    try {
+      const res = await fetch(`/api/view/${slug}/pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      if (!res.ok) throw new Error('PDF-download mislukt')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `EOO-gespreksverslag-${report.clientName}.pdf`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error(err)
+      alert('Er ging iets mis bij het genereren van de PDF.')
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   function scrollTo(id: string) {
     setActiveSection(id)
@@ -82,16 +115,33 @@ export function ReportViewer({ report }: { report: ReportData }) {
           ))}
         </nav>
 
-        {/* Print */}
-        <div className="px-5 py-4 border-t border-white/10">
+        {/* Download */}
+        <div className="px-5 py-4 border-t border-white/10 space-y-2">
+          {slug && password && (
+            <button
+              onClick={handleDownloadPDF}
+              disabled={downloading}
+              className="w-full bg-eoo-blue text-white font-montserrat font-bold text-xs py-2.5 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              {downloading ? 'PDF genereren...' : 'Download PDF'}
+            </button>
+          )}
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 text-xs text-gray-400 hover:text-white transition-colors"
+            className="w-full flex items-center justify-center gap-2 text-[11px] text-gray-400 hover:text-white transition-colors py-1"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
-            Print / PDF
+            Print (browser)
           </button>
         </div>
       </aside>

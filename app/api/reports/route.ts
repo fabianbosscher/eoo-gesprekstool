@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { sendReportEmail } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 import { nanoid } from 'nanoid'
-import { addDays } from 'date-fns'
+import { addDays } from '@/lib/dates'
 
 // GET: alle rapporten (gedeeld over agents)
 export async function GET() {
