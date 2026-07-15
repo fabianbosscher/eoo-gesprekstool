@@ -24,6 +24,14 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
+  // Password change
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [pwSaving, setPwSaving] = useState(false)
+  const [pwSuccess, setPwSuccess] = useState('')
+  const [pwError, setPwError] = useState('')
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
@@ -41,6 +49,47 @@ export default function SettingsPage() {
         })
     }
   }, [status])
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault()
+    setPwSuccess('')
+    setPwError('')
+
+    if (newPassword.length < 8) {
+      setPwError('Nieuw wachtwoord moet minimaal 8 tekens zijn.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError('Nieuwe wachtwoorden komen niet overeen.')
+      return
+    }
+
+    setPwSaving(true)
+    try {
+      const res = await fetch('/api/profile/password', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      if (res.status === 401) {
+        setPwError('Huidig wachtwoord is onjuist.')
+        return
+      }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setPwError(data.error ?? 'Er ging iets mis bij het wijzigen.')
+        return
+      }
+      setPwSuccess('Wachtwoord succesvol gewijzigd!')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch {
+      setPwError('Verbindingsfout. Probeer opnieuw.')
+    } finally {
+      setPwSaving(false)
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
@@ -144,6 +193,80 @@ export default function SettingsPage() {
             className="bg-eoo-blue text-white font-montserrat font-bold px-6 py-2.5 rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 text-sm"
           >
             {saving ? 'Opslaan...' : 'Opslaan'}
+          </button>
+        </form>
+
+        {/* Wachtwoord wijzigen */}
+        <form
+          onSubmit={handlePasswordChange}
+          className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5 mt-6"
+        >
+          <div>
+            <h3 className="font-montserrat font-bold text-lg text-eoo-marine">
+              Wachtwoord wijzigen
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">
+              Kies een sterk, uniek wachtwoord van minimaal 8 tekens.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Huidig wachtwoord
+            </label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Nieuw wachtwoord
+            </label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              minLength={8}
+              autoComplete="new-password"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Bevestig nieuw wachtwoord
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={8}
+              autoComplete="new-password"
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
+            />
+          </div>
+
+          {pwError && (
+            <p className="text-red-500 text-sm bg-red-50 px-4 py-3 rounded-lg">{pwError}</p>
+          )}
+          {pwSuccess && (
+            <p className="text-green-700 text-sm bg-green-50 px-4 py-3 rounded-lg">{pwSuccess}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={pwSaving}
+            className="bg-eoo-marine text-white font-montserrat font-bold px-6 py-2.5 rounded-xl hover:bg-eoo-marine/90 transition-colors disabled:opacity-50 text-sm"
+          >
+            {pwSaving ? 'Wijzigen...' : 'Wachtwoord wijzigen'}
           </button>
         </form>
       </main>
