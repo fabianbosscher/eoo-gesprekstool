@@ -1,6 +1,28 @@
-import { Document, Page, Text, View, StyleSheet, Svg, Path, renderToBuffer } from '@react-pdf/renderer'
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  renderToBuffer,
+} from '@react-pdf/renderer'
+import fs from 'fs'
+import path from 'path'
 import type { ReportContent } from './types'
 import { formatDateNL } from './dates'
+
+// Logo bestanden inladen uit /public (server-side, at module load)
+function loadLogo(filename: string): Buffer | null {
+  try {
+    return fs.readFileSync(path.join(process.cwd(), 'public', filename))
+  } catch {
+    return null
+  }
+}
+
+const LOGO_WHITE = loadLogo('logo-white.png')
+const LOGO_COLOR = loadLogo('logo-color.png')
 
 // EOO brand palette
 const COLORS = {
@@ -403,26 +425,16 @@ function initials(name: string): string {
     .join('')
 }
 
-function EooMark({ size = 22 }: { size?: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 100 100">
-      <Path
-        d="M50 5 A45 45 0 1 1 5 50 L20 50 A30 30 0 1 0 50 20 Z"
-        fill={COLORS.blue}
-      />
-    </Svg>
-  )
-}
-
 function PageHeader({ title }: { title: string }) {
   return (
     <View fixed style={styles.header}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-        <EooMark size={14} />
+      {LOGO_COLOR ? (
+        <Image src={LOGO_COLOR} style={{ height: 16, width: 'auto' }} />
+      ) : (
         <Text style={styles.headerBrand}>
           Easy <Text style={styles.headerBrandAccent}>Office</Text> Online
         </Text>
-      </View>
+      )}
       <Text style={styles.headerMeta}>{title}</Text>
     </View>
   )
@@ -470,17 +482,20 @@ export function ReportPDF({
         <View style={styles.coverInner}>
           <View>
             <View style={styles.coverTopBar}>
-              <EooMark size={26} />
-              <View>
-                <Text style={styles.coverBrand}>
-                  Easy <Text style={styles.coverBrandAccent}>Office</Text> Online
-                </Text>
-                <Text style={styles.coverTag}>Gesprekstool</Text>
-              </View>
+              {LOGO_WHITE ? (
+                <Image src={LOGO_WHITE} style={{ height: 40, width: 'auto' }} />
+              ) : (
+                <View>
+                  <Text style={styles.coverBrand}>
+                    Easy <Text style={styles.coverBrandAccent}>Office</Text> Online
+                  </Text>
+                </View>
+              )}
+              <Text style={styles.coverTag}>Gesprekstool</Text>
             </View>
 
             <View style={styles.coverTitleBlock}>
-              <Text style={styles.coverLabel}>Gespreksverslag & Voorstel</Text>
+              <Text style={styles.coverLabel}>Gespreksverslag</Text>
               <Text style={styles.coverTitle}>{title}</Text>
               <Text style={styles.coverSubtitle}>{dateLong}</Text>
             </View>

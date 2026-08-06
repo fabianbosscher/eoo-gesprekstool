@@ -6,7 +6,11 @@
       "Bash(openssl rand *)",
       "Bash(python3 -c \"import bcrypt; print\\(bcrypt.hashpw\\(b'admin123', bcrypt.gensalt\\(10\\)\\).decode\\(\\)\\)\")",
       "Bash(pip3 install *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(claude mcp *)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/fabianbosscher/.claude/local/**)",
+      "Bash(npm ls *)"
     ]
   }
 }

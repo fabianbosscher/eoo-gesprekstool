@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
         const passwordMatch = await bcrypt.compare(credentials.password, user.password)
         if (!passwordMatch) return null
 
-        return { id: user.id, email: user.email, name: user.name }
+        return { id: user.id, email: user.email, name: user.name, role: user.role }
       },
     }),
   ],
@@ -31,12 +31,17 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: '/login' },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id
+      if (user) {
+        token.id = (user as { id: string }).id
+        token.role = (user as { role?: string }).role ?? 'agent'
+      }
       return token
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        (session.user as { id?: string }).id = token.id as string
+      if (session.user) {
+        const u = session.user as { id?: string; role?: string }
+        if (token.id) u.id = token.id as string
+        if (token.role) u.role = token.role as string
       }
       return session
     },

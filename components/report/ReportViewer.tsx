@@ -92,7 +92,7 @@ export function ReportViewer({
         <div className="px-5 py-6 border-b border-white/10">
           <Logo variant="light" height={28} className="text-base leading-tight" />
           <p className="text-eoo-green text-[10px] mt-2 font-semibold uppercase tracking-wide">
-            Gespreksverslag & Voorstel
+            Gespreksverslag
           </p>
           <p className="text-gray-400 text-[11px] mt-2">{meetingDateFormatted}</p>
         </div>
@@ -147,12 +147,22 @@ export function ReportViewer({
       </aside>
 
       {/* Main content */}
-      <main className="ml-56 flex-1 px-8 py-8 max-w-4xl">
+      <main className="ml-56 print:ml-0 print:max-w-none flex-1 px-8 py-8 max-w-4xl">
+        {/* Print-only header met logo — komt bovenaan geprinte pagina */}
+        <div className="hidden print:flex items-center justify-between pb-4 mb-6 border-b border-gray-300">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-color.png" alt="Easy Office Online" style={{ height: 36 }} />
+          <div className="text-right text-xs text-gray-500">
+            <p className="font-semibold text-eoo-marine">Gespreksverslag</p>
+            <p>{meetingDateFormatted}</p>
+          </div>
+        </div>
+
         {/* Page header */}
         <div className="mb-8 pb-6 border-b border-gray-200">
           <h2 className="font-montserrat font-bold text-3xl text-eoo-marine">{report.title}</h2>
           <p className="text-eoo-blue font-montserrat font-semibold text-lg mt-1">
-            Gespreksverslag & Voorstel — {meetingDateFormatted}
+            Gespreksverslag — {meetingDateFormatted}
           </p>
           {report.creatorName && (
             <p className="text-gray-500 text-sm mt-2">

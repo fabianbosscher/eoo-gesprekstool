@@ -68,7 +68,10 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
       })
   }, [id, status])
 
-  const isOwner = report && (session?.user as { id?: string })?.id === report.userId
+  const sessionUser = session?.user as { id?: string; role?: string } | undefined
+  const isOwner = report && sessionUser?.id === report.userId
+  const isAdmin = sessionUser?.role === 'admin'
+  const canEdit = isOwner || isAdmin
 
   async function handleSave() {
     if (!report) return
@@ -126,13 +129,13 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
     )
   }
 
-  if (!isOwner) {
+  if (!canEdit) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
         <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center max-w-md">
           <h2 className="font-montserrat font-bold text-eoo-marine mb-2">Geen toegang</h2>
           <p className="text-gray-500 text-sm mb-4">
-            Alleen de agent die dit rapport heeft aangemaakt ({report.user?.name}) kan het bewerken.
+            Alleen de agent die dit rapport heeft aangemaakt ({report.user?.name}) of een admin kan het bewerken.
           </p>
           <Link
             href="/dashboard"

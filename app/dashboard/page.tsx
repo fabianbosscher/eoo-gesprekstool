@@ -125,7 +125,10 @@ export default function DashboardPage() {
           <div className="space-y-3">
             {reports.map((report) => {
               const expired = new Date() > new Date(report.expiresAt)
-              const isOwner = (session?.user as { id?: string })?.id === report.userId
+              const sessionUser = session?.user as { id?: string; role?: string } | undefined
+              const isOwner = sessionUser?.id === report.userId
+              const isAdmin = sessionUser?.role === 'admin'
+              const canManage = isOwner || isAdmin
               return (
                 <div
                   key={report.id}
@@ -175,7 +178,7 @@ export default function DashboardPage() {
                     >
                       PDF
                     </a>
-                    {isOwner && (
+                    {canManage && (
                       <Link
                         href={`/dashboard/reports/${report.id}/edit`}
                         className="text-sm text-gray-600 hover:text-eoo-marine px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
@@ -192,7 +195,7 @@ export default function DashboardPage() {
                     >
                       Link kopiëren
                     </button>
-                    {isOwner && (
+                    {canManage && (
                       <button
                         onClick={() => handleDelete(report.id)}
                         className="text-sm text-red-400 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"

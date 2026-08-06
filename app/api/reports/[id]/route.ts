@@ -38,11 +38,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 
-  const userId = (session.user as { id?: string }).id!
+  const sessionUser = session.user as { id?: string; role?: string }
+  const userId = sessionUser.id!
+  const isAdmin = sessionUser.role === 'admin'
   const { id } = await params
 
-  const existing = await prisma.report.findFirst({ where: { id, userId } })
-  if (!existing) return NextResponse.json({ error: 'Niet gevonden of geen rechten' }, { status: 404 })
+  const existing = await prisma.report.findUnique({ where: { id } })
+  if (!existing) return NextResponse.json({ error: 'Niet gevonden' }, { status: 404 })
+  if (!isAdmin && existing.userId !== userId) {
+    return NextResponse.json({ error: 'Geen rechten' }, { status: 403 })
+  }
 
   const body = await req.json()
   const data: {
@@ -71,11 +76,16 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 
-  const userId = (session.user as { id?: string }).id!
+  const sessionUser = session.user as { id?: string; role?: string }
+  const userId = sessionUser.id!
+  const isAdmin = sessionUser.role === 'admin'
   const { id } = await params
 
-  const report = await prisma.report.findFirst({ where: { id, userId } })
+  const report = await prisma.report.findUnique({ where: { id } })
   if (!report) return NextResponse.json({ error: 'Niet gevonden' }, { status: 404 })
+  if (!isAdmin && report.userId !== userId) {
+    return NextResponse.json({ error: 'Geen rechten' }, { status: 403 })
+  }
 
   await prisma.report.delete({ where: { id } })
   return NextResponse.json({ success: true })
