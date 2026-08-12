@@ -11,7 +11,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const report = await prisma.report.findUnique({
     where: { id },
-    include: { user: { select: { id: true, name: true, bookingUrl: true } } },
+    include: {
+      user: { select: { id: true, name: true, bookingUrl: true } },
+      editors: {
+        include: { user: { select: { id: true, name: true, email: true } } },
+      },
+    },
   })
 
   if (!report) return NextResponse.json({ error: 'Niet gevonden' }, { status: 404 })
@@ -30,6 +35,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       content: JSON.parse(report.content),
       userId: report.userId,
       user: report.user,
+      editorIds: report.editors.map((e) => e.userId),
+      editors: report.editors.map((e) => e.user),
     },
   })
 }
@@ -43,9 +50,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const isAdmin = sessionUser.role === 'admin'
   const { id } = await params
 
-  const existing = await prisma.report.findUnique({ where: { id } })
+  const existing = await prisma.report.findUnique({
+    where: { id },
+    include: { editors: { select: { userId: true } } },
+  })
   if (!existing) return NextResponse.json({ error: 'Niet gevonden' }, { status: 404 })
-  if (!isAdmin && existing.userId !== userId) {
+
+  const isOwner = existing.userId === userId
+  const isEditor = existing.editors.some((e) => e.userId === userId)
+  const canEdit = isOwner || isAdmin || isEditor
+  const canManage = isOwner || isAdmin
+
+  if (!canEdit) {
     return NextResponse.json({ error: 'Geen rechten' }, { status: 403 })
   }
 
@@ -64,12 +80,33 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (typeof body.showBooking === 'boolean') data.showBooking = body.showBooking
   if (body.content && typeof body.content === 'object') data.content = JSON.stringify(body.content)
 
-  const report = await prisma.report.update({
-    where: { id },
-    data,
-  })
+  await prisma.report.update({ where: { id }, data })
 
-  return NextResponse.json({ report: { id: report.id, slug: report.slug } })
+  // Editors bijwerken — alleen owner/admin mag dit
+  if (canManage && Array.isArray(body.editorIds)) {
+    const requestedIds = (body.editorIds as unknown[])
+      .filter((v): v is string => typeof v === 'string')
+      // Owner mag geen editor van zichzelf zijn
+      .filter((v) => v !== existing.userId)
+
+    const currentIds = existing.editors.map((e) => e.userId)
+    const toAdd = requestedIds.filter((id) => !currentIds.includes(id))
+    const toRemove = currentIds.filter((id) => !requestedIds.includes(id))
+
+    if (toRemove.length > 0) {
+      await prisma.reportEditor.deleteMany({
+        where: { reportId: id, userId: { in: toRemove } },
+      })
+    }
+    if (toAdd.length > 0) {
+      await prisma.reportEditor.createMany({
+        data: toAdd.map((uid) => ({ reportId: id, userId: uid })),
+        skipDuplicates: true,
+      })
+    }
+  }
+
+  return NextResponse.json({ report: { id: existing.id, slug: existing.slug } })
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

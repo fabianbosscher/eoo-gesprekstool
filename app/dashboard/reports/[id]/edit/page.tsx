@@ -17,6 +17,15 @@ interface ReportData {
   content: ReportContent
   userId: string
   user: { id: string; name: string; bookingUrl: string | null }
+  editorIds: string[]
+  editors: { id: string; name: string; email: string }[]
+}
+
+interface AgentUser {
+  id: string
+  name: string
+  email: string
+  role: string
 }
 
 export default function EditReportPage({ params }: { params: Promise<{ id: string }> }) {
@@ -42,6 +51,10 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
   const [proposition, setProposition] = useState('')
   const [collaboration, setCollaboration] = useState('')
 
+  // Delen met
+  const [editorIds, setEditorIds] = useState<string[]>([])
+  const [agents, setAgents] = useState<AgentUser[]>([])
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
   }, [status, router])
@@ -63,15 +76,26 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
           setHighlights(d.report.content.highlights)
           setProposition(d.report.content.proposition)
           setCollaboration(d.report.content.collaboration)
+          setEditorIds(d.report.editorIds ?? [])
         }
         setLoading(false)
       })
   }, [id, status])
 
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    fetch('/api/users')
+      .then((r) => r.json())
+      .then((d) => setAgents(d.users ?? []))
+      .catch(() => setAgents([]))
+  }, [status])
+
   const sessionUser = session?.user as { id?: string; role?: string } | undefined
   const isOwner = report && sessionUser?.id === report.userId
   const isAdmin = sessionUser?.role === 'admin'
-  const canEdit = isOwner || isAdmin
+  const isEditor = report && sessionUser?.id ? report.editorIds.includes(sessionUser.id) : false
+  const canEdit = isOwner || isAdmin || isEditor
+  const canManage = isOwner || isAdmin // Alleen owner/admin mag editors beheren
 
   async function handleSave() {
     if (!report) return
@@ -97,6 +121,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          editorIds: canManage ? editorIds : undefined,
           title,
           clientName,
           clientEmail,
@@ -225,6 +250,82 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
             </span>
           </label>
         </div>
+
+        {/* Delen met */}
+        {canManage && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
+            <div>
+              <h2 className="font-montserrat font-bold text-lg text-eoo-marine">Delen met collega&apos;s</h2>
+              <p className="text-xs text-gray-400 mt-1">
+                Gedeelde collega&apos;s kunnen dit rapport óók bewerken. Verwijderen kan alleen door de eigenaar of een admin.
+              </p>
+            </div>
+
+            <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+              <span className="font-semibold text-eoo-marine">Eigenaar:</span> {report.user?.name}
+            </div>
+
+            <div className="space-y-2">
+              {agents
+                .filter((a) => a.id !== report.userId)
+                .map((agent) => {
+                  const checked = editorIds.includes(agent.id)
+                  return (
+                    <label
+                      key={agent.id}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-colors ${
+                        checked
+                          ? 'border-eoo-blue bg-blue-50/60'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEditorIds([...editorIds, agent.id])
+                          } else {
+                            setEditorIds(editorIds.filter((id) => id !== agent.id))
+                          }
+                        }}
+                        className="w-4 h-4 accent-eoo-blue"
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-eoo-marine">
+                          {agent.name}
+                          {agent.role === 'admin' && (
+                            <span className="ml-2 text-[10px] text-eoo-blue bg-blue-100 px-1.5 py-0.5 rounded uppercase tracking-wide">
+                              Admin
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500">{agent.email}</div>
+                      </div>
+                    </label>
+                  )
+                })}
+              {agents.filter((a) => a.id !== report.userId).length === 0 && (
+                <p className="text-sm text-gray-400">Er zijn geen andere collega&apos;s om mee te delen.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Alleen-lezen weergave voor editors (kunnen niet zelf beheren) */}
+        {!canManage && report.editors.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-3">
+            <div>
+              <h2 className="font-montserrat font-bold text-lg text-eoo-marine">Gedeeld rapport</h2>
+              <p className="text-xs text-gray-400 mt-1">
+                Dit rapport is met jou gedeeld. Je kunt bewerken, maar niet verwijderen of de deel-lijst wijzigen.
+              </p>
+            </div>
+            <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
+              <span className="font-semibold text-eoo-marine">Eigenaar:</span> {report.user?.name}
+            </div>
+          </div>
+        )}
 
         {/* Samenvatting */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">

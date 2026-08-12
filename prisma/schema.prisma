@@ -9,29 +9,42 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  name       String
-  password   String
-  role       String   @default("agent")
-  bookingUrl String?
-  createdAt  DateTime @default(now())
-  reports    Report[]
+  id             String         @id @default(cuid())
+  email          String         @unique
+  name           String
+  password       String
+  role           String         @default("agent")
+  bookingUrl     String?
+  createdAt      DateTime       @default(now())
+  reports        Report[]
+  editingReports ReportEditor[]
 }
 
 model Report {
-  id           String    @id @default(cuid())
-  slug         String    @unique
+  id           String         @id @default(cuid())
+  slug         String         @unique
   title        String
   clientName   String
   clientEmail  String
   meetingDate  DateTime
   passwordHash String
-  content      String    @db.Text
-  createdAt    DateTime  @default(now())
+  content      String         @db.Text
+  createdAt    DateTime       @default(now())
   expiresAt    DateTime
   sentAt       DateTime?
-  showBooking  Boolean   @default(false)
+  showBooking  Boolean        @default(false)
   userId       String
-  user         User      @relation(fields: [userId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
+  editors      ReportEditor[]
+}
+
+model ReportEditor {
+  reportId  String
+  userId    String
+  createdAt DateTime @default(now())
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reportId, userId])
+  @@index([userId])
 }

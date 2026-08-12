@@ -26,10 +26,16 @@ export async function GET() {
       sentAt: true,
       userId: true,
       user: { select: { name: true, email: true } },
+      editors: { select: { userId: true } },
     },
   })
 
-  return NextResponse.json({ reports })
+  const shaped = reports.map((r) => ({
+    ...r,
+    editorIds: r.editors.map((e) => e.userId),
+  }))
+
+  return NextResponse.json({ reports: shaped })
 }
 
 // POST: nieuw rapport aanmaken

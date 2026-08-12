@@ -19,6 +19,7 @@ interface Report {
   sentAt: string | null
   userId: string
   user: { name: string; email: string }
+  editorIds: string[]
 }
 
 export default function DashboardPage() {
@@ -128,7 +129,12 @@ export default function DashboardPage() {
               const sessionUser = session?.user as { id?: string; role?: string } | undefined
               const isOwner = sessionUser?.id === report.userId
               const isAdmin = sessionUser?.role === 'admin'
-              const canManage = isOwner || isAdmin
+              const isEditor = sessionUser?.id
+                ? (report.editorIds ?? []).includes(sessionUser.id)
+                : false
+              const canEdit = isOwner || isAdmin || isEditor
+              const canDelete = isOwner || isAdmin
+              const isShared = (report.editorIds ?? []).length > 0
               return (
                 <div
                   key={report.id}
@@ -150,6 +156,14 @@ export default function DashboardPage() {
                       ) : (
                         <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full shrink-0">
                           Concept
+                        </span>
+                      )}
+                      {isShared && (
+                        <span
+                          className="text-xs bg-blue-50 text-eoo-blue px-2 py-0.5 rounded-full shrink-0"
+                          title="Dit rapport is gedeeld met één of meer collega's"
+                        >
+                          Gedeeld
                         </span>
                       )}
                     </div>
@@ -178,7 +192,7 @@ export default function DashboardPage() {
                     >
                       PDF
                     </a>
-                    {canManage && (
+                    {canEdit && (
                       <Link
                         href={`/dashboard/reports/${report.id}/edit`}
                         className="text-sm text-gray-600 hover:text-eoo-marine px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
@@ -195,7 +209,7 @@ export default function DashboardPage() {
                     >
                       Link kopiëren
                     </button>
-                    {canManage && (
+                    {canDelete && (
                       <button
                         onClick={() => handleDelete(report.id)}
                         className="text-sm text-red-400 hover:text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
