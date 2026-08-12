@@ -44,7 +44,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
     clientName: report.clientName,
     meetingDate: report.meetingDate,
     content: JSON.parse(report.content) as ReportContent,
-    creatorName: report.user?.name ?? null,
+    creatorName: report.creatorLabel ?? report.user?.name ?? null,
     bookingUrl: report.showBooking ? report.user?.bookingUrl ?? null : null,
   })
 

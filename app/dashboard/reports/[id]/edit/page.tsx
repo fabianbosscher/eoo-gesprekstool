@@ -14,6 +14,7 @@ interface ReportData {
   clientName: string
   clientEmail: string
   showBooking: boolean
+  creatorLabel: string | null
   content: ReportContent
   userId: string
   user: { id: string; name: string; bookingUrl: string | null }
@@ -44,6 +45,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')
   const [showBooking, setShowBooking] = useState(false)
+  const [creatorLabel, setCreatorLabel] = useState('')
   const [summary, setSummary] = useState('')
   const [keyTakeaways, setKeyTakeaways] = useState<string[]>([])
   const [participants, setParticipants] = useState<ReportParticipant[]>([])
@@ -70,6 +72,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
           setClientName(d.report.clientName)
           setClientEmail(d.report.clientEmail)
           setShowBooking(d.report.showBooking)
+          setCreatorLabel(d.report.creatorLabel ?? '')
           setSummary(d.report.content.overview.summary)
           setKeyTakeaways(d.report.content.overview.keyTakeaways)
           setParticipants(d.report.content.participants)
@@ -126,6 +129,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
           clientName,
           clientEmail,
           showBooking,
+          creatorLabel,
           content: updatedContent,
         }),
       })
@@ -205,6 +209,22 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
               onChange={(e) => setTitle(e.target.value)}
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Opgesteld door <span className="text-gray-400 font-normal">(zoals getoond op rapport & PDF)</span>
+            </label>
+            <input
+              type="text"
+              value={creatorLabel}
+              onChange={(e) => setCreatorLabel(e.target.value)}
+              placeholder={report.user?.name ?? ''}
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Laat leeg om automatisch de aanmaker ({report.user?.name}) te tonen. Vul een andere naam of tekst in om die te tonen (bijv. &quot;Fabián &amp; René&quot;).
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

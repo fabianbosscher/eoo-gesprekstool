@@ -32,6 +32,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       expiresAt: report.expiresAt,
       sentAt: report.sentAt,
       showBooking: report.showBooking,
+      creatorLabel: report.creatorLabel,
       content: JSON.parse(report.content),
       userId: report.userId,
       user: report.user,
@@ -71,6 +72,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     clientName?: string
     clientEmail?: string
     showBooking?: boolean
+    creatorLabel?: string | null
     content?: string
   } = {}
 
@@ -78,6 +80,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (typeof body.clientName === 'string' && body.clientName.trim()) data.clientName = body.clientName.trim()
   if (typeof body.clientEmail === 'string' && body.clientEmail.trim()) data.clientEmail = body.clientEmail.trim()
   if (typeof body.showBooking === 'boolean') data.showBooking = body.showBooking
+  if (typeof body.creatorLabel === 'string') {
+    const trimmed = body.creatorLabel.trim()
+    data.creatorLabel = trimmed.length ? trimmed : null
+  }
   if (body.content && typeof body.content === 'object') data.content = JSON.stringify(body.content)
 
   await prisma.report.update({ where: { id }, data })

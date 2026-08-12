@@ -33,6 +33,7 @@ model Report {
   expiresAt    DateTime
   sentAt       DateTime?
   showBooking  Boolean        @default(false)
+  creatorLabel String?
   userId       String
   user         User           @relation(fields: [userId], references: [id])
   editors      ReportEditor[]
