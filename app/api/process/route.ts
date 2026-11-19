@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { processTranscription, type OfferMode } from '@/lib/claude'
 
 export async function POST(req: NextRequest) {
@@ -17,6 +18,16 @@ export async function POST(req: NextRequest) {
   const validOfferModes: OfferMode[] = ['auto', 'yes', 'no']
   const safeOfferMode: OfferMode = validOfferModes.includes(offerMode) ? offerMode : 'auto'
 
+  // Haal alleen contacten op die daadwerkelijk in de transcriptie voorkomen —
+  // scheelt tokens en voorkomt dat Claude verkeerde personen matcht.
+  const allContacts = await prisma.knownContact.findMany({
+    select: { name: true, role: true, company: true, notes: true },
+  })
+  const transcriptLower = transcription.toLowerCase()
+  const relevantContacts = allContacts.filter((c) =>
+    transcriptLower.includes(c.name.toLowerCase())
+  )
+
   const content = await processTranscription(
     transcription,
     clientName ?? 'Onbekend',
@@ -24,6 +35,7 @@ export async function POST(req: NextRequest) {
     {
       offerMode: safeOfferMode,
       extraInstructions: typeof extraInstructions === 'string' ? extraInstructions : '',
+      knownContacts: relevantContacts,
     }
   )
 

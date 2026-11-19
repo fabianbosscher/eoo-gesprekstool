@@ -22,9 +22,28 @@ Geef ALLEEN de JSON terug, zonder markdown code blocks, geen uitleg, geen json p
 
 export type OfferMode = 'auto' | 'yes' | 'no'
 
+export interface KnownContactHint {
+  name: string
+  role: string
+  company?: string | null
+  notes?: string | null
+}
+
 export interface ProcessOptions {
   offerMode?: OfferMode
   extraInstructions?: string
+  knownContacts?: KnownContactHint[]
+}
+
+function buildKnownContactsBlock(contacts: KnownContactHint[] | undefined): string {
+  if (!contacts || contacts.length === 0) return ''
+  const lines = contacts.map((c) => {
+    const parts = [`Naam: ${c.name}`, `Functie: ${c.role}`]
+    if (c.company) parts.push(`Bedrijf: ${c.company}`)
+    if (c.notes) parts.push(`Notitie: ${c.notes}`)
+    return `- ${parts.join(' · ')}`
+  })
+  return `\n\nBekende contactpersonen (gebruik deze exacte functie en bedrijf als je de persoon herkent in de transcriptie, ook als hun functie daar anders of niet genoemd wordt):\n${lines.join('\n')}`
 }
 
 function buildOptionsBlock(options: ProcessOptions): string {
@@ -58,6 +77,7 @@ export async function processTranscription(
   options: ProcessOptions = {}
 ): Promise<ReportContent> {
   const optionsBlock = buildOptionsBlock(options)
+  const contactsBlock = buildKnownContactsBlock(options.knownContacts)
 
   const message = await client.messages.create({
     model: 'claude-sonnet-4-6',
@@ -73,7 +93,7 @@ E-mail klant: ${contactEmail}
 Transcriptie:
 ---
 ${transcription}
----${optionsBlock}
+---${contactsBlock}${optionsBlock}
 
 Genereer een JSON object met deze exacte structuur:
 {

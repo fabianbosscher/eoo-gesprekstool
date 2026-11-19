@@ -49,3 +49,15 @@ model ReportEditor {
   @@id([reportId, userId])
   @@index([userId])
 }
+
+model KnownContact {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  company   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([name])
+}

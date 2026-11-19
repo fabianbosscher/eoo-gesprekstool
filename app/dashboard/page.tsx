@@ -71,6 +71,12 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-300">{session?.user?.name}</span>
             <Link
+              href="/dashboard/contacts"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              Contacten
+            </Link>
+            <Link
               href="/dashboard/settings"
               className="text-sm text-gray-400 hover:text-white transition-colors"
             >
