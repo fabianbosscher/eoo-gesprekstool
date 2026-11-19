@@ -10,6 +10,7 @@ interface Profile {
   id: string
   name: string
   email: string
+  jobTitle: string | null
   bookingUrl: string | null
 }
 
@@ -19,6 +20,7 @@ export default function SettingsPage() {
 
   const [profile, setProfile] = useState<Profile | null>(null)
   const [name, setName] = useState('')
+  const [jobTitle, setJobTitle] = useState('')
   const [bookingUrl, setBookingUrl] = useState('')
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState('')
@@ -44,6 +46,7 @@ export default function SettingsPage() {
           if (d.user) {
             setProfile(d.user)
             setName(d.user.name)
+            setJobTitle(d.user.jobTitle ?? '')
             setBookingUrl(d.user.bookingUrl ?? '')
           }
         })
@@ -101,7 +104,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, bookingUrl }),
+        body: JSON.stringify({ name, jobTitle, bookingUrl }),
       })
       if (!res.ok) throw new Error()
       const data = await res.json()
@@ -152,6 +155,20 @@ export default function SettingsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Functie</label>
+            <p className="text-xs text-gray-400 mb-2">
+              Je functie binnen Easy Office Online (bijv. Directeur, Account Manager). Claude gebruikt deze automatisch als je naam voorkomt als deelnemer in een gesprek.
+            </p>
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              placeholder="bijv. Account Manager"
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
             />
           </div>

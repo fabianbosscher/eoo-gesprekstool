@@ -18,13 +18,28 @@ export async function POST(req: NextRequest) {
   const validOfferModes: OfferMode[] = ['auto', 'yes', 'no']
   const safeOfferMode: OfferMode = validOfferModes.includes(offerMode) ? offerMode : 'auto'
 
-  // Haal alleen contacten op die daadwerkelijk in de transcriptie voorkomen —
-  // scheelt tokens en voorkomt dat Claude verkeerde personen matcht.
-  const allContacts = await prisma.knownContact.findMany({
-    select: { name: true, role: true, company: true, notes: true },
-  })
+  // Scan transcript voor bekende namen — externe klant-contacten + interne agents met jobTitle.
+  // Alleen meesturen als de naam daadwerkelijk voorkomt, scheelt tokens en voorkomt mismatches.
   const transcriptLower = transcription.toLowerCase()
-  const relevantContacts = allContacts.filter((c) =>
+
+  const [allContacts, allUsers] = await Promise.all([
+    prisma.knownContact.findMany({
+      select: { name: true, role: true, company: true, notes: true },
+    }),
+    prisma.user.findMany({
+      where: { jobTitle: { not: null } },
+      select: { name: true, jobTitle: true },
+    }),
+  ])
+
+  const agentHints = allUsers.map((u) => ({
+    name: u.name,
+    role: u.jobTitle!,
+    company: 'Easy Office Online',
+    notes: null,
+  }))
+
+  const relevantContacts = [...agentHints, ...allContacts].filter((c) =>
     transcriptLower.includes(c.name.toLowerCase())
   )
 

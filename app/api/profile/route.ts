@@ -10,7 +10,7 @@ export async function GET() {
   const userId = (session.user as { id?: string }).id!
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, bookingUrl: true },
+    select: { id: true, name: true, email: true, jobTitle: true, bookingUrl: true },
   })
 
   return NextResponse.json({ user })
@@ -21,10 +21,14 @@ export async function PATCH(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 
   const userId = (session.user as { id?: string }).id!
-  const { name, bookingUrl } = await req.json()
+  const { name, jobTitle, bookingUrl } = await req.json()
 
-  const data: { name?: string; bookingUrl?: string | null } = {}
+  const data: { name?: string; jobTitle?: string | null; bookingUrl?: string | null } = {}
   if (typeof name === 'string' && name.trim()) data.name = name.trim()
+  if (typeof jobTitle === 'string') {
+    const trimmed = jobTitle.trim()
+    data.jobTitle = trimmed.length ? trimmed : null
+  }
   if (typeof bookingUrl === 'string') {
     const trimmed = bookingUrl.trim()
     data.bookingUrl = trimmed.length ? trimmed : null
@@ -33,7 +37,7 @@ export async function PATCH(req: NextRequest) {
   const user = await prisma.user.update({
     where: { id: userId },
     data,
-    select: { id: true, name: true, email: true, bookingUrl: true },
+    select: { id: true, name: true, email: true, jobTitle: true, bookingUrl: true },
   })
 
   return NextResponse.json({ user })
