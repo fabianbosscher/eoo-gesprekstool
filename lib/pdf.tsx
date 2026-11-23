@@ -7,22 +7,14 @@ import {
   Image,
   renderToBuffer,
 } from '@react-pdf/renderer'
-import fs from 'fs'
-import path from 'path'
 import type { ReportContent } from './types'
 import { formatDateNL } from './dates'
+import { LOGO_WHITE_DATA_URL, LOGO_COLOR_DATA_URL } from './logos'
 
-// Logo bestanden inladen uit /public (server-side, at module load)
-function loadLogo(filename: string): Buffer | null {
-  try {
-    return fs.readFileSync(path.join(process.cwd(), 'public', filename))
-  } catch {
-    return null
-  }
-}
-
-const LOGO_WHITE = loadLogo('logo-white.png')
-const LOGO_COLOR = loadLogo('logo-color.png')
+// Logo's zijn inline base64 ingebakken in de code — serverless-friendly,
+// geen gedoe meer met fs/filesystem/tracingIncludes.
+const LOGO_WHITE: string | null = LOGO_WHITE_DATA_URL
+const LOGO_COLOR: string | null = LOGO_COLOR_DATA_URL
 
 // EOO brand palette
 const COLORS = {
