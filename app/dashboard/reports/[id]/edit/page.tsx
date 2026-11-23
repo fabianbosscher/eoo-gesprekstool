@@ -13,6 +13,7 @@ interface ReportData {
   title: string
   clientName: string
   clientEmail: string
+  meetingDate: string
   showBooking: boolean
   creatorLabel: string | null
   content: ReportContent
@@ -44,6 +45,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
   const [title, setTitle] = useState('')
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')
+  const [meetingDate, setMeetingDate] = useState('')
   const [showBooking, setShowBooking] = useState(false)
   const [creatorLabel, setCreatorLabel] = useState('')
   const [summary, setSummary] = useState('')
@@ -71,6 +73,9 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
           setTitle(d.report.title)
           setClientName(d.report.clientName)
           setClientEmail(d.report.clientEmail)
+          setMeetingDate(
+            d.report.meetingDate ? String(d.report.meetingDate).slice(0, 10) : ''
+          )
           setShowBooking(d.report.showBooking)
           setCreatorLabel(d.report.creatorLabel ?? '')
           setSummary(d.report.content.overview.summary)
@@ -128,6 +133,7 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
           title,
           clientName,
           clientEmail,
+          meetingDate,
           showBooking,
           creatorLabel,
           content: updatedContent,
@@ -236,6 +242,17 @@ export default function EditReportPage({ params }: { params: Promise<{ id: strin
                 type="text"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                Datum gesprek
+              </label>
+              <input
+                type="date"
+                value={meetingDate}
+                onChange={(e) => setMeetingDate(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-eoo-blue text-sm"
               />
             </div>

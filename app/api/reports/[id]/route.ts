@@ -71,6 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     title?: string
     clientName?: string
     clientEmail?: string
+    meetingDate?: Date
     showBooking?: boolean
     creatorLabel?: string | null
     content?: string
@@ -79,6 +80,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (typeof body.title === 'string' && body.title.trim()) data.title = body.title.trim()
   if (typeof body.clientName === 'string' && body.clientName.trim()) data.clientName = body.clientName.trim()
   if (typeof body.clientEmail === 'string' && body.clientEmail.trim()) data.clientEmail = body.clientEmail.trim()
+  if (typeof body.meetingDate === 'string' && body.meetingDate.trim()) {
+    const parsed = new Date(body.meetingDate)
+    if (!isNaN(parsed.getTime())) data.meetingDate = parsed
+  }
   if (typeof body.showBooking === 'boolean') data.showBooking = body.showBooking
   if (typeof body.creatorLabel === 'string') {
     const trimmed = body.creatorLabel.trim()
